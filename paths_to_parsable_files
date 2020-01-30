@@ -1,0 +1,5 @@
+info_dataset: /home/jonas/src/inf368/info_dataset
+dictionary: /home/jonas/src/inf368/classes_dict
+train: /home/jonas/src/inf368/train_images_paths
+val: /home/jonas/src/inf368/val_images_paths
+test: /home/jonas/src/inf368/test_images_paths

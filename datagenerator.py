@@ -1,7 +1,30 @@
-
-# FOUND THIS ON SITE PROVIDED IN PDF: https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
 import numpy as np
 import keras
+import imageio
+
+def prepare_data(X: np.ndarray) -> np.ndarray:
+    """ Pad a 28x28 picture into a 32x32 picture """
+    X_new = np.pad(X, ((0, 0), (2, 2), (2, 2), (0, 0)), 'constant')
+    return X_new
+
+def parse_file(folder: str, path: str, labels: dict) -> list:
+    ids = []
+
+    for line in open(path, "r"):
+        label, _ = line.strip().split("/")
+        img_full_path = "data/" + folder + "/" + line.strip()
+        ids.append(img_full_path)
+        labels[img_full_path] = int(label)
+
+    return ids
+
+def generate_generator_objects() -> tuple:
+    labels = { }
+    X_train_ids = parse_file("train", "train_images_paths", labels)
+    X_val_ids = parse_file("val", "val_images_paths", labels)
+    X_test_ids = parse_file("test", "test_images_paths", labels)
+
+    return ({ "train": X_train_ids, "validation": X_val_ids, "test": X_test_ids }, labels)
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
@@ -49,7 +72,9 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
-            X[i,] = np.load('data/' + ID + '.npy')
+            img = np.array([imageio.imread(ID)]).T
+            img = prepare_data(np.array([img]))
+            X[i,] = img[0]
 
             # Store class
             y[i] = self.labels[ID]

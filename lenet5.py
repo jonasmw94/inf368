@@ -14,7 +14,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils.np_utils import to_categorical
 from keras.callbacks import TensorBoard
 from keras.datasets import mnist
-from datagenerator import DataGenerator 
+from datagenerator import DataGenerator, generate_generator_objects
 
 # Load mnist data
 (X_train_raw, y_train_raw), (X_test, y_test) = mnist.load_data()
@@ -24,6 +24,12 @@ X_train_raw = X_train_raw.reshape(len(X_train_raw), 28, 28, 1)
 X_test = X_test.reshape(len(X_test), 28, 28, 1)
 
 sns.set()
+
+params = {'dim': (32,32),
+          'batch_size': 256,
+          'n_classes': 10,
+          'n_channels': 1,
+          'shuffle': True}
 
 
 def generate_lenet5_model(activation='relu', kernel_regularizer=None) -> keras.Sequential:
@@ -73,9 +79,9 @@ def train_keras_model(X_train: np.ndarray, y_train: np.ndarray, model: keras.Seq
 
     if not generator:
         return model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=(X_validation, y_validation), shuffle=True)
-    
-    train_generator = DataGenerator(X_train, y_train, batch_size=BATCH_SIZE)
-    validation_generator = DataGenerator(X_validation, y_validation, batch_size=BATCH_SIZE)
+    (partition, labels) = generate_generator_objects()
+    train_generator = DataGenerator(partition['train'], labels, **params)
+    validation_generator = DataGenerator(partition['validation'], labels, **params)
     
     return model.fit_generator(train_generator, validation_data=validation_generator, epochs=EPOCHS)
 
